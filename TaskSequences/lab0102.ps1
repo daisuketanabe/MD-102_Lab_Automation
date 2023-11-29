@@ -1,7 +1,12 @@
 # Practice Lab: Synchronizing Identities by using Azure AD Connect 
 
-# Task 1: Configure directory synchronization with Azure AD Connect
+# Prerequisites
+$PSScriptRoot
+$ScriptName = "./TaskSequences/lab0101.ps1"
 
+Invoke-Expression $ScriptName
+
+# Task 1: Configure directory synchronization with Azure AD Connect
 function Show-MessageBox {
     [CmdletBinding(PositionalBinding=$false)]
     param(
@@ -81,7 +86,7 @@ $URL = "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-98
 $CWD = Get-Location
 $Dest = "$CWD/AzureADConnect.msi"
 # Download the file
-Start-BitsTransfer -Source $URL -Destination $Dest
+Invoke-WebRequest -Uri $URL -OutFile $Dest
 
 Show-MessageBox 'Starting Azure AD Connect V2'
 Show-MessageBox 'Follow the instruciton from step 5 to install Azure AD Connect V2'

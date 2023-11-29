@@ -1,36 +1,45 @@
-#Practice Lab: Managing Identities in Azure AD
+# Practice Lab: Managing Identities in Azure AD
 
-$ModuleInstalled = $False
-$ModuleVersionInstalled = $False
-$ModuleName = "Microsoft.Graph"
-$Modules = Get-Module -Name $ModuleName -ListAvailable
+try {
+    $ModuleInstalled = $False
+    $ModuleVersionInstalled = $False
+    $ModuleName = "Microsoft.Graph"
+    $Modules = Get-Module -Name $ModuleName -ListAvailable
 
-ForEach ($Module in $Modules){
-    $ModuleInstalled = $True
-    if ($Module -ge 2.10.0){
-        $ModuleVersionInstalled = $True
+    ForEach ($Module in $Modules){
+        $ModuleInstalled = $True
+        if ($Module -ge 2.10.0){
+            $ModuleVersionInstalled = $True
+        }
     }
-}
-if ($ModuleInstalled){
-    if ($ModuleVersionInstalled){
-        Write-Host -ForegroundColor Green "√ $ModuleName is already installed with a compatible version"
+    if ($ModuleInstalled){
+        if ($ModuleVersionInstalled){
+            Write-Host -ForegroundColor Green "$ModuleName is already installed with a compatible version"
+        }else{
+            Uninstall-Module $ModuleName 
+            Install-Module $ModuleName -Force -Scope CurrentUser
+        }
     }else{
-        Uninstall-Module $ModuleName 
-        Install-Module $ModuleName -Force -Scope CurrentUser
+        Install-Module $ModuleName -Scope CurrentUser
     }
-}else{
-    Install-Module $ModuleName -Scope CurrentUser
-}
+    Connect-MgGraph -Scopes "User.ReadWrite.All, Group.ReadWrite.All, RoleManagement.ReadWrite.Directory, Organization.ReadWrite.All" -NoWelcome
 
-Connect-MgGraph -Scopes "User.ReadWrite.All, Group.ReadWrite.All, RoleManagement.ReadWrite.Directory, Organization.ReadWrite.All" -NoWelcome
+}catch {
+    "An error occurred that could not be resolved."
+}
 
 #Exercise 1: Creating users in Azure AD
 
 #Task 1: Create users by using the Microsoft Entra admin center
 
-$TenantId = Read-Host "Enter your tenant ID"
+$Organization = Get-MgOrganization
 
-$DomainName = $TenantId + ".onmicrosoft.com"
+ForEach ($VerifiedDomain in $Organization.VerifiedDomains){
+    if ($VerifiedDomain -notlike '*.mail.onmicrosoft.com'){
+        $DomainName = $VerifiedDomain.Name
+        Break
+    }
+}
 
 $PasswordProfile = @{
     Password = 'Pa55-w.rd!';
@@ -50,7 +59,7 @@ if ($User.Count -eq 0){
         -PasswordProfile $PasswordProfile -AccountEnabled `
         -Department "HR" -JobTitle "HR Rep"
 }else{
-    Write-Host -ForegroundColor Green "√ User account $UPN already exists"
+    Write-Host -ForegroundColor Green "User account $UPN already exists"
 }
 
 $UPN =  "msnider@$DomainName"
@@ -66,7 +75,7 @@ if ($User.Count -eq 0){
         -PasswordProfile $PasswordProfile -AccountEnabled `
         -Department "Operations" -JobTitle "Helpdesk Manager"
 }else{
-    Write-Host -ForegroundColor Green "√ User account $UPN already exists"
+    Write-Host -ForegroundColor Green "User account $UPN already exists"
 }
 
 
@@ -90,7 +99,7 @@ if ($User.Count -eq 0){
     -PasswordProfile $PWProfile -AccountEnabled `
     -Department "Sales" -JobTitle "Sales Rep"
 }else{
-    Write-Host -ForegroundColor Green "√ User account $UPN already exists"
+    Write-Host -ForegroundColor Green "User account $UPN already exists"
 }
 
 #Exercise 2: Assigning Administrative Roles in Azure AD
@@ -111,7 +120,7 @@ if($User.Id -notin $Members.Id) {
         -DirectoryRoleId $Role.Id `
         -BodyParameter $DirObject
 }else{
-    Write-Host -ForegroundColor Green "√ $UPN is already assigned to $RoleName"
+    Write-Host -ForegroundColor Green "$UPN is already assigned to $RoleName"
 }
 
 $RoleName = "User Administrator"
@@ -130,7 +139,7 @@ if($User.Id -notin $Members.Id) {
         -DirectoryRoleId $Role.Id `
         -BodyParameter $DirObject
 }else{
-    Write-Host -ForegroundColor Green "√ $UPN is already assigned to $RoleName"
+    Write-Host -ForegroundColor Green "$UPN is already assigned to $RoleName"
 }
 
 $RoleName = "Helpdesk Administrator"
@@ -149,7 +158,7 @@ if($User.Id -notin $Members.Id) {
         -DirectoryRoleId $Role.Id `
         -BodyParameter $DirObject
 }else{
-    Write-Host -ForegroundColor Green "√ $UPN is already assigned to $RoleName"
+    Write-Host -ForegroundColor Green "$UPN is already assigned to $RoleName"
 }
 
 # Exercise 3: Creating and managing groups and validating license assignment
@@ -165,7 +174,7 @@ if ($Group.Count -eq 0){
         -MailEnabled:$false `
         -Mailnickname "Contoso_Sales" -SecurityEnabled
 }else{
-    Write-Host -ForegroundColor Green "√ $GroupName group already exists"
+    Write-Host -ForegroundColor Green "$GroupName group already exists"
 }
 
 $Group = Get-MgGroup -Filter "DisplayName eq '$GroupName'"
@@ -178,7 +187,7 @@ $User = Get-MgUser -Filter "UserPrincipalName eq '$UPN'"
 if ($User.Id -notin $Members.Id){
     New-MgGroupMember -GroupId $Group.Id -DirectoryObjectId $User.Id
 }else{
-    Write-Host -ForegroundColor Green "√ $UPN is already a member of $GroupName"  
+    Write-Host -ForegroundColor Green "$UPN is already a member of $GroupName"  
 }
 
 $UPN =  "msnider@$DomainName"
@@ -187,7 +196,7 @@ $User = Get-MgUser -Filter "UserPrincipalName eq '$UPN'"
 if ($User.Id -notin $Members.Id){
     New-MgGroupMember -GroupId $Group.Id -DirectoryObjectId $User.Id
 }else{
-    Write-Host -ForegroundColor Green "√ $UPN is already a member of $GroupName"  
+    Write-Host -ForegroundColor Green "$UPN is already a member of $GroupName"  
 }
 
 # Task 2: Create groups by using PowerShell
@@ -202,7 +211,7 @@ if ($Group.Count -eq 0){
         -MailEnabled:$false `
         -Mailnickname "Contoso_Sales" -SecurityEnabled
 }else{
-    Write-Host -ForegroundColor Green "√ $GroupName group already exists"
+    Write-Host -ForegroundColor Green "$GroupName group already exists"
 }
 
 $Group = Get-MgGroup -Filter "DisplayName eq '$GroupName'"
@@ -215,7 +224,7 @@ $Members = Get-MgGroupMember -GroupId $Group.Id
 if ($User.Id -notin $Members.Id){
     New-MgGroupMember -GroupId $Group.Id -DirectoryObjectId $User.Id
 }else{
-    Write-Host -ForegroundColor Green "√ $UPN is already a member of $GroupName"  
+    Write-Host -ForegroundColor Green "$UPN is already a member of $GroupName"  
 }
 
 # Task 3: Review licenses and modify company branding
@@ -236,7 +245,7 @@ if ($SKU.SkuId -notin $UserSKUs.SkuId){
         -AddLicenses @{SkuId = $SKU.SkuId} `
         -RemoveLicenses @()
 }else{
-    Write-Host -ForegroundColor Green "√ $UPN already has Office 365 E5 Licence"  
+    Write-Host -ForegroundColor Green "$UPN already has Office 365 E5 Licence"  
 }
 
 $GroupName =  "Contoso_Managers"
