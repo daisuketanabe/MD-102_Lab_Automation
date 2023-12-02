@@ -79,20 +79,25 @@ function Show-MessageBox {
 
 Show-MessageBox 'This lab exercise cannot be automated by PowerShell'
 
-# Download Entra Connect
-Show-MessageBox 'Downlaoding Azure AD Connect V2'
-$URL = "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi"
-# Destination file
-$CWD = Get-Location
-$Dest = "$CWD/AzureADConnect.msi"
-# Download the file
-Invoke-WebRequest -Uri $URL -OutFile $Dest
-
-Show-MessageBox 'Starting Azure AD Connect V2'
+Show-MessageBox 'Starting Azure AD Connect V2 Installation'
 Show-MessageBox 'Follow the instruciton from step 5 to install Azure AD Connect V2'
+Show-MessageBox 'After the installtion completes, come back to this script'
 Start-Process "https://github.com/MicrosoftLearning/MD-102T00-Microsoft-365-Endpoint-Administrator/blob/master/Instructions/Labs/0102-Syncronizing%20Identities%20by%20using%20Azure%20AD%20Connect.md"
 
+$Dest = "./Files/AzureADConnect.msi"
 Start-Process $Dest
+
+$Confirm = Read-Host -Prompt "Azure AD Connect V2 Installed? [Y/N]"
+While ($Confirm.ToLower() -ne 'y'){
+  $Confirm = Read-Host -Prompt "Azure AD Connect V2 Installed? [Y/N]"
+}
+
+# $Installed = $False
+# While ($Installed -eq $False){
+#   Write-Host -ForegroundColor Yellow "Checking Azure AD connect V2 installation."
+#   Start-Sleep 10
+# }
+
 
 # Start Sync
 
