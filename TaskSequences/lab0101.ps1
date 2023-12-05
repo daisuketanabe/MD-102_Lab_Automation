@@ -1,3 +1,5 @@
+Write-Host -ForegroundColor Blue "Starting Practice Lab: Managing Identities in Azure AD"
+
 # Practice Lab: Managing Identities in Azure AD
 
 try {
@@ -28,7 +30,8 @@ try {
     "An error occurred that could not be resolved."
 }
 
-#Exercise 1: Creating users in Azure AD
+# Exercise 1: Creating users in Azure AD
+Write-Host -ForegroundColor Blue "Starting Exercise 1: Creating users in Azure AD"
 
 #Task 1: Create users by using the Microsoft Entra admin center
 
@@ -102,7 +105,10 @@ if ($User.Count -eq 0){
     Write-Host -ForegroundColor Green "User account $UPN already exists"
 }
 
-#Exercise 2: Assigning Administrative Roles in Azure AD
+Write-Host -ForegroundColor Blue "Completed Exercise 1: Creating users in Azure AD"
+
+# Exercise 2: Assigning Administrative Roles in Azure AD
+Write-Host -ForegroundColor Blue "Starting Exercise 2: Assigning Administrative Roles in Azure AD"
 
 $RoleName = "Global Administrator"
 $Role = Get-MgDirectoryRole | Where-Object {$_.DisplayName -eq $RoleName}
@@ -161,7 +167,10 @@ if($User.Id -notin $Members.Id) {
     Write-Host -ForegroundColor Green "$UPN is already assigned to $RoleName"
 }
 
+Write-Host -ForegroundColor Blue "Completed Exercise 2: Assigning Administrative Roles in Azure AD"
+
 # Exercise 3: Creating and managing groups and validating license assignment
+Write-Host -ForegroundColor Blue "Starting Exercise 3: Creating and managing groups and validating license assignment"
 
 # Task 1: Create groups by using the Microsoft Entra admin center
 
@@ -170,7 +179,7 @@ $Group = Get-MgGroup -Filter "DisplayName eq '$GroupName'" | Measure-Object
 
 if ($Group.Count -eq 0){
     New-MgGroup `
-        -DisplayName "Contoso_Managers" `
+        -DisplayName $GroupName `
         -MailEnabled:$false `
         -Mailnickname "Contoso_Sales" -SecurityEnabled
 }else{
@@ -206,7 +215,7 @@ $Group = Get-MgGroup -Filter "DisplayName eq '$GroupName'" | Measure-Object
 
 if ($Group.Count -eq 0){
     New-MgGroup `
-        -DisplayName "Contoso_Sales" `
+        -DisplayName $GroupName `
         -Description "Contoso Sales team users" `
         -MailEnabled:$false `
         -Mailnickname "Contoso_Sales" -SecurityEnabled
@@ -264,3 +273,6 @@ Set-MgGroupLicense `
     -AddLicenses @{SkuId = $SKU.SkuId} `
     -RemoveLicenses @() `
     -ErrorAction Ignore
+
+Write-Host -ForegroundColor Blue "Completed Exercise 3: Creating and managing groups and validating license assignment"
+Write-Host -ForegroundColor Blue "Completed Practice Lab: Managing Identities in Azure AD"
